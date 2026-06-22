@@ -1,149 +1,193 @@
-# VeritAI — Multimodal Fake News Detector
-### Flask Backend + React Frontend + Claude API
+# 🛡️ VeritAI
+### AI-Powered Multimodal Fake News Detection System
+
+VeritAI is an AI-powered web application that detects fake news from **text** and **images** using Large Language Models (LLMs). It provides user authentication, news analysis, and an intuitive dashboard for verifying information.
 
 ---
 
-## Project Structure
+## 📸 Project Preview
+
+### 🏠 Home Page
+
+![Home](<img width="1870" height="904" alt="Screenshot 2026-04-13 215530" src="https://github.com/user-attachments/assets/d74bf981-ff9a-449f-91bf-6fa8beb4305a" />
+)
+
+---
+
+### 🔐 Login
+
+![Login](<img width="1919" height="859" alt="Screenshot 2026-04-05 233359" src="https://github.com/user-attachments/assets/a7824768-ba1c-4ea1-935d-89408e1fc060" />
+)
+
+---
+
+### 📝 Register
+
+![Register](<img width="1882" height="902" alt="Screenshot 2026-04-08 004825" src="https://github.com/user-attachments/assets/fc560d1a-ddd1-446f-a7bb-c407292e69e3" />
+)
+
+---
+
+### 📊 Dashboard
+
+![Dashboard](<img width="1882" height="902" alt="Screenshot 2026-04-08 004825" src="https://github.com/user-attachments/assets/870ca7a9-172b-4bf9-a4e5-2e50c2145189" />
+)
+
+---
+
+### 🤖 AI Fake News Analysis
+
+![Analysis](<img width="1872" height="881" alt="Screenshot 2026-04-13 215207" src="https://github.com/user-attachments/assets/e852e707-3794-42e6-af5e-f2a8ae830074" />
+)
+
+---
+
+## ✨ Features
+
+- 🔐 Secure User Authentication
+- 🤖 AI-Powered Fake News Detection
+- 📰 Live News Feed
+- 🖼️ Image-Based Fake News Analysis
+- 📊 Modern Dashboard
+- ⚡ Fast Flask Backend
+- 💾 SQLite Database
+- 🌐 REST API Architecture
+
+---
+
+## 🏗️ System Architecture
 
 ```
-veritai/
-│
-├── backend/                    ← Flask Python Backend
-│   ├── app.py                  ← Main server (entry point)
-│   ├── requirements.txt        ← Python dependencies
-│   ├── .env.example            ← Copy this to .env
-│   │
-│   ├── routes/                 ← API endpoints (URLs)
-│   │   ├── __init__.py
-│   │   ├── health.py           ← GET  /api/health
-│   │   ├── analyze.py          ← POST /api/analyze/text  +  /api/analyze/image
-│   │   └── news.py             ← GET  /api/news
-│   │
-│   └── services/               ← Business logic (AI processing)
-│       ├── __init__.py
-│       └── claude_service.py   ← Calls Claude API, parses response
-│
-└── frontend/                   ← React Frontend
-    ├── index.html              ← Main HTML page
-    ├── css/
-    │   └── style.css           ← All styling
-    └── js/
-        └── app.js              ← React components + API calls
+          Frontend (HTML, CSS, JavaScript)
+                     │
+                     ▼
+          Flask Backend (Python)
+                     │
+     ┌───────────────┼───────────────┐
+     ▼               ▼               ▼
+ SQLite DB      Groq API      Claude API
 ```
 
 ---
 
-## Setup (Step by Step)
+## 🛠️ Tech Stack
 
-### Step 1 — Clone / Download the project
-Open the `veritai/` folder in VS Code.
+### Frontend
 
-### Step 2 — Set up the Backend
+- HTML5
+- CSS3
+- JavaScript
 
-Open VS Code terminal (`Ctrl + backtick`) and run:
+### Backend
+
+- Python
+- Flask
+- Flask-CORS
+
+### Database
+
+- SQLite
+
+### AI APIs
+
+- Groq
+- Anthropic Claude
+
+---
+
+## 📂 Project Structure
+
+```
+VeritAI
+│
+├── backend
+│   ├── routes
+│   ├── services
+│   ├── app.py
+│   ├── db.py
+│   └── requirements.txt
+│
+├── frontend
+│   ├── css
+│   ├── js
+│   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   └── dashboard.html
+│
+├── screenshots
+│
+├── README.md
+└── .gitignore
+```
+
+---
+
+## 🚀 Installation
+
+### Clone Repository
 
 ```bash
-# Go into backend folder
-cd backend
+git clone https://github.com/Rituraj-24/VeritAI.git
+```
 
-# Create a virtual environment (keeps dependencies isolated)
+### Go to Project
+
+```bash
+cd VeritAI/backend
+```
+
+### Create Virtual Environment
+
+```bash
 python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On Mac/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Download spaCy language model (for NER)
-python -m spacy download en_core_web_sm
 ```
 
-### Step 3 — Add your API Key
+### Activate Virtual Environment
+
+Windows
 
 ```bash
-# Copy the example file
-cp .env.example .env
+venv\Scripts\activate
 ```
 
-Now open `.env` in VS Code and replace the placeholder:
-```
-ANTHROPIC_API_KEY=sk-ant-your-actual-key-here
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
 ```
 
-Get your key from: https://console.anthropic.com
-
-### Step 4 — Run the Backend
+### Run Backend
 
 ```bash
 python app.py
 ```
 
-You should see:
-```
-╔══════════════════════════════════════╗
-║   VeritAI Backend Starting...        ║
-║   URL:   http://localhost:5000        ║
-╚══════════════════════════════════════╝
-```
-
-Test it in browser: http://localhost:5000/api/health
-
-### Step 5 — Run the Frontend
-
-1. Open VS Code
-2. Install "Live Server" extension (if not already)
-3. Open `frontend/index.html`
-4. Right-click → **Open with Live Server**
-5. Browser opens at `http://127.0.0.1:5500`
-
----
-
-## How It All Works Together
+Open the frontend using **Live Server** and start from:
 
 ```
-[You type text]
-      ↓
-[React frontend — app.js]
-      ↓  fetch("http://localhost:5000/api/analyze/text", { method: "POST", body: text })
-[Flask Backend — routes/analyze.py]
-      ↓  calls analyze_text_with_claude(text)
-[Service — services/claude_service.py]
-      ↓  client.messages.create(model="claude-sonnet...", messages=[...])
-[Claude API (Anthropic)]
-      ↓  returns JSON analysis
-[Back up the chain to React]
-      ↓
-[UI updates with verdict, confidence, entities, etc.]
+frontend/index.html
 ```
 
 ---
 
-## API Endpoints Reference
+## 🎯 Future Improvements
 
-| Method | URL                    | What it does                        |
-|--------|------------------------|-------------------------------------|
-| GET    | /api/health            | Check if backend is running         |
-| POST   | /api/analyze/text      | Analyze text for fake news          |
-| POST   | /api/analyze/image     | Analyze image (OCR + analysis)      |
-| GET    | /api/news              | Fetch live news headlines            |
-| GET    | /api/news?category=technology | Filter by category          |
+- Admin Dashboard
+- Email Verification
+- User Profile
+- Mobile Responsive UI
 
 ---
 
-## Common Issues
+## 👨‍💻 Developer
 
-**"Cannot connect to backend"**
-→ Make sure `python app.py` is running in a terminal
+**Ritu Shrivastava**
 
-**"Invalid API key"**
-→ Check your `.env` file has the correct key (no spaces around `=`)
+GitHub: https://github.com/Rituraj-24
 
-**"CORS error" in browser console**
-→ Make sure you're opening frontend via Live Server (port 5500), not by double-clicking the file
+---
 
-**Port already in use**
-→ Change `FLASK_PORT=5001` in `.env`
+## ⭐ If you like this project
+
+Give this repository a ⭐ on GitHub.
