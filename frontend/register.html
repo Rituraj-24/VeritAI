@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — VeritAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --surface:#12121a;
+    --surface2:#1a1a26;
+    --border:rgba(255,255,255,0.07);
+    --accent:#6c63ff;
+    --text:#f0f0f8;
+    --muted:#8888a8;
+    --danger:#ff6b6b;
+    --success:#43e97b
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    padding:1rem
+  }
+  .page{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+  .left-panel{
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:2.5rem;
+    position:relative;
+    overflow:hidden
+  }
+  .left-panel::before{
+    content:'';
+    position:absolute;
+    top:-100px;
+    right:-100px;
+    width:400px;
+    height:400px;
+    background:radial-gradient(circle,rgba(108,99,255,0.08) 0%,transparent 70%);
+    pointer-events:none
+  }
+  .logo{
+    font-family:'Syne',sans-serif;
+    font-weight:800;
+    font-size:1.3rem;
+    letter-spacing:-0.5px;
+    text-decoration:none;
+    color:var(--text);
+    cursor:pointer;
+    display:inline-block
+  }
+  .logo span{color:var(--accent)}
+  .panel-content{
+    margin:auto;
+    max-width:400px;
+    width:100%;
+    padding:2rem 0;
+    position:relative;
+    z-index:1
+  }
+  h2{
+    font-family:'Syne',sans-serif;
+    font-size:2.2rem;
+    font-weight:700;
+    letter-spacing:-1px;
+    margin-bottom:0.6rem
+  }
+  h2 em{font-style:normal;color:var(--accent)}
+  p.sub{color:var(--muted);line-height:1.6;margin-bottom:2rem;font-size:0.95rem}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form-group{margin-bottom:1.1rem}
+  label{
+    display:block;
+    font-size:0.83rem;
+    color:var(--muted);
+    margin-bottom:6px;
+    font-weight:500
+  }
+  input[type="email"],
+  input[type="password"],
+  input[type="text"]{
+    width:100%;
+    padding:0.75rem 1rem;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--text);
+    font-family:'DM Sans',sans-serif;
+    font-size:0.95rem;
+    outline:none;
+    transition:border-color 0.2s,box-shadow 0.2s
+  }
+  input:focus{
+    border-color:rgba(108,99,255,0.5);
+    box-shadow:0 0 0 3px rgba(108,99,255,0.1)
+  }
+  input::placeholder{color:var(--muted);opacity:0.6}
+  .strength-bar{
+    height:3px;
+    background:var(--border);
+    border-radius:2px;
+    overflow:hidden;
+    margin-top:6px
+  }
+  .strength-fill{
+    height:100%;
+    width:0;
+    transition:width 0.3s,background 0.3s;
+    border-radius:2px
+  }
+  .strength-text{
+    font-size:0.73rem;
+    color:var(--muted);
+    margin-top:4px
+  }
+  .terms{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    font-size:0.83rem;
+    color:var(--muted);
+    margin-bottom:1.4rem;
+    margin-top:0.4rem;
+    line-height:1.4
+  }
+  .terms a{color:var(--accent);text-decoration:none;cursor:pointer}
+  .terms a:hover{text-decoration:underline}
+  .btn{
+    width:100%;
+    padding:0.85rem;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-family:'DM Sans',sans-serif;
+    font-size:1rem;
+    font-weight:500;
+    cursor:pointer;
+    transition:all 0.2s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px
+  }
+  .btn:hover:not(:disabled){background:#7c75ff;transform:translateY(-1px)}
+  .btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+  .spinner{
+    width:16px;
+    height:16px;
+    border:2px solid rgba(255,255,255,0.3);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:none
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .switch-link{
+    text-align:center;
+    font-size:0.88rem;
+    color:var(--muted);
+    margin-top:1.5rem
+  }
+  .switch-link a{
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:500;
+    cursor:pointer
+  }
+  .switch-link a:hover{text-decoration:underline}
+  .msg{
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:0.88rem;
+    margin-bottom:1rem;
+    display:none;
+    animation:slideIn 0.3s ease
+  }
+  .msg.error{
+    background:rgba(255,107,107,0.08);
+    border:1px solid rgba(255,107,107,0.25);
+    color:var(--danger);
+    display:block
+  }
+  .msg.success{
+    background:rgba(67,233,123,0.08);
+    border:1px solid rgba(67,233,123,0.25);
+    color:var(--success);
+    display:block
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+  .right-panel{
+    background:var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:2rem;
+    padding:2.5rem;
+    position:relative;
+    overflow:hidden
+  }
+  .right-panel::before{
+    content:'';
+    position:absolute;
+    bottom:20%;
+    left:-100px;
+    width:500px;
+    height:500px;
+    background:radial-gradient(circle,rgba(67,233,123,0.06) 0%,transparent 70%);
+    pointer-events:none
+  }
+  .perks{max-width:340px;width:100%;position:relative;z-index:1}
+  .perk-title{
+    font-family:'Syne',sans-serif;
+    font-size:1.4rem;
+    font-weight:700;
+    letter-spacing:-0.5px;
+    margin-bottom:1.5rem;
+    color:var(--muted)
+  }
+  .perk-title strong{color:var(--text)}
+  .perk{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:1rem;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:10px
+  }
+  .perk-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px}
+  .perk h4{font-size:0.9rem;font-weight:500;margin-bottom:3px}
+  .perk p{font-size:0.8rem;color:var(--muted);line-height:1.4}
+  @media(max-width:768px){
+    .page{grid-template-columns:1fr}
+    .right-panel{display:none}
+    .row2{grid-template-columns:1fr}
+    .left-panel{padding:2rem}
+    .panel-content{padding:1rem 0}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="left-panel">
+    <a href="index.html" class="logo">Verit<span>AI</span></a>
+    <div class="panel-content">
+      <h2>Create your<br>account <em>.</em></h2>
+      <p class="sub">Start analyzing news for free. No credit card required.</p>
+      <div id="msg" class="msg"></div>
+      <div class="row2">
+        <div class="form-group">
+          <label for="firstname">First name</label>
+          <input 
+            type="text" 
+            id="firstname" 
+            placeholder="Arjun"
+            autocomplete="given-name"
+          >
+        </div>
+        <div class="form-group">
+          <label for="lastname">Last name</label>
+          <input 
+            type="text" 
+            id="lastname" 
+            placeholder="Sharma"
+            autocomplete="family-name"
+          >
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input 
+          type="email" 
+          id="email" 
+          placeholder="you@example.com"
+          autocomplete="email"
+        >
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          placeholder="Min. 8 characters"
+          autocomplete="new-password"
+          oninput="checkStrength(this.value)"
+        >
+        <div class="strength-bar"><div class="strength-fill" id="sfill"></div></div>
+        <div class="strength-text" id="stext"></div>
+      </div>
+      <div class="form-group">
+        <label for="confirm">Confirm password</label>
+        <input 
+          type="password" 
+          id="confirm" 
+          placeholder="Re-enter password"
+          autocomplete="new-password"
+        >
+      </div>
+      <label class="terms">
+        <input type="checkbox" id="terms"> 
+        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      </label>
+      <button class="btn" id="btn" onclick="handleRegister()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btn-text">Create account →</span>
+      </button>
+      <div class="switch-link">Already have an account? <a href="login.html">Sign in</a></div>
+    </div>
+  </div>
+  <div class="right-panel">
+    <div class="perks">
+      <p class="perk-title"><strong>Everything you need</strong><br>to fight fake news.</p>
+      <div class="perk">
+        <div class="perk-icon">🔒</div>
+        <div>
+          <h4>Encrypted Passwords</h4>
+          <p>Passwords are hashed with bcrypt — never stored in plain text.</p>
+        </div>
+      </div>
+      <div class="perk">
+        <div class="perk-icon">🪙</div>
+        <div>
+          <h4>JWT Authentication</h4>
+          <p>Secure tokens keep you logged in safely across sessions.</p>
+        </div>
+      </div>
+      <div class="perk">
+        <div class="perk-icon">📊</div>
+        <div>
+          <h4>Personal Dashboard</h4>
+          <p>Track your analysis history, stats, and trends over time.</p>
+        </div>
+      </div>
+      <div class="perk">
+        <div class="perk-icon">📡</div>
+        <div>
+          <h4>Live News Feed</h4>
+          <p>Browse and analyze real headlines from trusted sources.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5001/api';
+
+function authLog(step, details) {
+  console.log(`[register] ${step}`, details || '');
+}
+
+// Check if already logged in
+function checkExistingAuth() {
+  const token = localStorage.getItem('veritai_token');
+  const user = localStorage.getItem('veritai_user');
+  authLog('auth check', { hasToken: Boolean(token), hasUser: Boolean(user) });
+  
+  if (token && user) {
+    // User is already logged in, redirect to dashboard
+    authLog('already authenticated, redirecting to dashboard');
+    window.location.replace('dashboard.html');
+    return true;
+  }
+  return false;
+}
+
+function checkStrength(p) {
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  
+  const lvl = [
+    { w: '0%', c: '', l: '' },
+    { w: '25%', c: '#ff6b6b', l: 'Weak' },
+    { w: '50%', c: '#ffb347', l: 'Fair' },
+    { w: '75%', c: '#6c63ff', l: 'Good' },
+    { w: '100%', c: '#43e97b', l: 'Strong' }
+  ];
+  
+  document.getElementById('sfill').style.cssText = `width:${lvl[s].w};background:${lvl[s].c}`;
+  document.getElementById('stext').textContent = lvl[s].l;
+  document.getElementById('stext').style.color = lvl[s].c;
+}
+
+function showMessage(text, type) {
+  const msgEl = document.getElementById('msg');
+  msgEl.textContent = text;
+  msgEl.className = `msg ${type}`;
+}
+
+function saveSession(data, fallbackEmail) {
+  const user = {
+    id: data.user?.id || data.user?.user_id || fallbackEmail,
+    firstname: data.user?.firstname || data.user?.first_name || 'User',
+    lastname: data.user?.lastname || data.user?.last_name || '',
+    email: data.user?.email || fallbackEmail
+  };
+
+  localStorage.setItem('veritai_token', data.token || '');
+  localStorage.setItem('veritai_user', JSON.stringify(user));
+  sessionStorage.setItem('veritai_token', data.token || '');
+  sessionStorage.setItem('veritai_user', JSON.stringify(user));
+}
+
+async function handleRegister() {
+  const firstname = document.getElementById('firstname').value.trim();
+  const lastname = document.getElementById('lastname').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('confirm').value;
+  const terms = document.getElementById('terms').checked;
+  const btn = document.getElementById('btn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btn-text');
+
+  if (!firstname || !lastname || !email || !password) {
+    showMessage("All fields are required", "error");
+    return;
+  }
+
+  authLog('register submit', { firstname, lastname, email, passwordLength: password.length, confirmLength: confirm.length, terms });
+
+  try {
+    const res = await fetch("http://127.0.0.1:5001/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        password: password
+      })
+    });
+
+    const data = await res.json();
+    authLog('register response', { status: res.status, ok: res.ok, data });
+
+    if (!res.ok) {
+      showMessage(data.error || "Registration failed", "error");
+      return;
+    }
+
+    saveSession(data, email);
+    showMessage("Account created! Redirecting to dashboard...", "success");
+    window.location.assign('dashboard.html');
+
+  } catch (err) {
+    showMessage("Server error. Is backend running?", "error");
+  }
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !document.getElementById('btn').disabled) {
+    handleRegister();
+  }
+});
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkExistingAuth);
+} else {
+  checkExistingAuth();
+}
+</script>
+
+</body>
+</html>

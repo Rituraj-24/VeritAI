@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — VeritAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: rgba(255,255,255,0.07);
+    --accent: #6c63ff;
+    --text: #f0f0f8;
+    --muted: #8888a8;
+    --danger: #ff6b6b;
+    --success: #43e97b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+  }
+
+  .auth-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .auth-header { margin-bottom: 2rem; }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .auth-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+
+  .auth-header p { color: var(--muted); font-size: 0.9rem; }
+
+  .form-group { margin-bottom: 1.2rem; }
+
+  label {
+    display: block;
+    font-size: 0.83rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus {
+    border-color: rgba(108,99,255,0.5);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
+  }
+
+  input::placeholder { color: var(--muted); opacity: 0.6; }
+
+  .msg {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 1.2rem;
+    font-size: 0.88rem;
+    display: none;
+    animation: slideIn 0.3s ease;
+  }
+
+  .msg.error {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: var(--danger);
+    display: block;
+  }
+
+  .msg.success {
+    background: rgba(67,233,123,0.1);
+    border: 1px solid rgba(67,233,123,0.3);
+    color: var(--success);
+    display: block;
+  }
+
+  .msg.info {
+    background: rgba(108,99,255,0.1);
+    border: 1px solid rgba(108,99,255,0.3);
+    color: #b8b4ff;
+    display: block;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn:hover:not(:disabled) { background: #7c75ff; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .switch-link {
+    text-align: center;
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+  }
+
+  .switch-link a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .switch-link a:hover { text-decoration: underline; }
+
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading-overlay.active { display: flex; }
+
+  @media (max-width: 480px) {
+    .auth-container { padding: 2rem; border-radius: 12px; }
+    .auth-header h2 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div style="text-align: center;">
+    <div style="width:40px;height:40px;border:3px solid rgba(108,99,255,0.2);border-top-color:#6c63ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem;"></div>
+    <p style="color:#8888a8;">Signing in...</p>
+  </div>
+</div>
+
+<div class="auth-container">
+  <div class="auth-header">
+    <div class="logo" onclick="window.location.href='index.html'">Verit<span>AI</span></div>
+    <h2>Sign in</h2>
+    <p>Welcome back! Enter your credentials to continue.</p>
+  </div>
+
+  <div id="msg" class="msg"></div>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+    </div>
+
+    <button id="btn" class="btn" type="submit">
+      <span class="spinner" id="spinner"></span>
+      <span id="btn-text">Sign in →</span>
+    </button>
+  </form>
+
+  <div class="switch-link">
+    No account? <a href="register.html">Create one free</a>
+  </div>
+</div>
+
+<script src="js/login.js"></script>
+<script>
+  console.log("LOGIN JS LOADED");
+</script></body>
+</html>

@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — VeritAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --surface3: #1f1f2e;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.14);
+    --accent: #6c63ff;
+    --text: #f0f0f8;
+    --muted: #8888a8;
+    --verified: #43e97b;
+    --fake: #ff6b6b;
+    --suspicious: #ffb347;
+    --stylefake: #ff8c69;
+    --sidebar-w: 240px;
+    --popup-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* ── LIGHT MODE ── */
+  body.light {
+    --bg: #f4f4f8;
+    --surface: #ffffff;
+    --surface2: #ebebf3;
+    --surface3: #e0e0ec;
+    --border: rgba(0,0,0,0.08);
+    --border-hover: rgba(0,0,0,0.15);
+    --text: #111118;
+    --muted: #6b6b88;
+    --popup-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  body.light .topbar {
+    background: rgba(244,244,248,0.85);
+  }
+  body.light #debug-panel {
+    background: #f0f0f8;
+    color: #333;
+  }
+
+  /* ── USER POPUP ── */
+  .user-popup-wrap { position: relative; }
+  .user-popup {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border-hover);
+    border-radius: 12px;
+    box-shadow: var(--popup-shadow);
+    overflow: hidden;
+    z-index: 200;
+    min-width: 200px;
+    animation: popupIn 0.15s ease;
+  }
+  @keyframes popupIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .user-popup.open { display: block; }
+  .popup-header {
+    padding: 0.9rem 1rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .popup-header .popup-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+  .popup-header .popup-email { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+  .popup-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.13s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .popup-item:hover { background: var(--surface2); }
+  .popup-item .pi-icon { font-size: 1rem; width: 20px; text-align: center; }
+  .popup-item.danger { color: var(--fake); }
+  .popup-item.danger:hover { background: rgba(255,107,107,0.08); }
+  .popup-divider { height: 1px; background: var(--border); margin: 2px 0; }
+
+  /* Theme toggle switch */
+  .theme-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+  }
+  .theme-toggle-row:hover { background: var(--surface2); }
+  .theme-left { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text); }
+  .theme-left .pi-icon { font-size: 1rem; width: 20px; text-align: center; }
+  .toggle-switch {
+    width: 34px; height: 19px;
+    background: var(--surface3);
+    border-radius: 100px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: 1px solid var(--border-hover);
+  }
+  .toggle-switch.on { background: var(--accent); }
+  .toggle-knob {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 13px; height: 13px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .toggle-switch.on .toggle-knob { left: 17px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 50;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.5px;
+  }
+  .sidebar-logo span { color: var(--accent); }
+  .sidebar-section {
+    padding: 1.2rem 1rem 0.5rem;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.65rem 1rem;
+    margin: 1px 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(108,99,255,0.12); color: var(--accent); }
+  .nav-item .nav-icon { width: 18px; text-align: center; font-size: 1rem; }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-pill:hover { background: var(--surface2); }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: rgba(108,99,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-email { font-size: 0.73rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .logout-btn { font-size: 0.75rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: color 0.15s; }
+  .logout-btn:hover { color: var(--fake); }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    padding: 1.2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .topbar h1 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .status-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: rgba(67,233,123,0.08);
+    border: 1px solid rgba(67,233,123,0.2);
+    border-radius: 100px;
+    font-size: 0.78rem;
+    color: var(--verified);
+  }
+  .status-dot { width: 6px; height: 6px; background: var(--verified); border-radius: 50%; }
+
+  /* PAGE CONTENT */
+  .page-content {
+    padding: 2rem;
+    flex: 1;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border-hover); }
+  .stat-card-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+  .stat-card-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: -1px; }
+  .stat-card-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+
+  /* MAIN GRID */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* ANALYSIS PANEL */
+  .analysis-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-header h2 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; }
+  .panel-body { padding: 1.5rem; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface2); padding: 4px; border-radius: 8px; }
+  .tab {
+    flex: 1;
+    padding: 0.55rem;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--muted);
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab.active { background: var(--surface3); color: var(--text); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: rgba(108,99,255,0.4); }
+  textarea::placeholder { color: var(--muted); opacity: 0.5; }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .upload-zone:hover { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.03); }
+  .upload-zone .upload-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+  .upload-zone p { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+  .upload-zone strong { color: var(--text); }
+  #image-input { display: none; }
+  #image-preview { max-width: 100%; border-radius: 8px; margin-top: 1rem; display: none; }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 0.85rem;
+    margin-top: 1.2rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .analyze-btn:hover { background: #7c75ff; transform: translateY(-1px); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* SPINNER */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* RESULT PANEL */
+  .result-area {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    display: none;
+  }
+  .result-area.visible { display: block; }
+
+  .verdict-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .v-fake { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); color: var(--fake); }
+  .v-verified { background: rgba(67,233,123,0.1); border-color: rgba(67,233,123,0.3); color: var(--verified); }
+  .v-suspicious { background: rgba(255,179,71,0.1); border-color: rgba(255,179,71,0.3); color: var(--suspicious); }
+  .v-stylefake { background: rgba(255,140,105,0.1); border-color: rgba(255,140,105,0.3); color: var(--stylefake); }
+
+  .confidence-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .conf-block { flex: 1; min-width: 120px; }
+  .conf-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; }
+  .conf-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .conf-bar { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .conf-pct { font-size: 0.8rem; font-weight: 600; min-width: 30px; }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+  .result-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .result-box h4 { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.6rem; letter-spacing: 0.5px; text-transform: uppercase; }
+  .result-box p { font-size: 0.85rem; line-height: 1.5; }
+  .result-box.full { grid-column: 1/-1; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--surface3);
+    color: var(--muted);
+  }
+  .tag.warn { background: rgba(255,179,71,0.08); border-color: rgba(255,179,71,0.25); color: var(--suspicious); }
+  .tag.person { background: rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.2); color: #a5a0ff; }
+  .tag.org { background: rgba(67,233,123,0.08); border-color: rgba(67,233,123,0.2); color: var(--verified); }
+
+  /* LIVE FEED */
+  .feed-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: sticky;
+    top: 80px;
+  }
+  .feed-item {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-item:hover { background: var(--surface2); }
+  .feed-source {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .feed-headline { font-size: 0.88rem; line-height: 1.4; color: var(--text); }
+  .feed-loading { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.88rem; }
+
+  .refresh-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+  .refresh-btn:hover { color: var(--text); }
+
+  /* HISTORY */
+  .history-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-text { font-size: 0.85rem; flex: 1; line-height: 1.4; color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .history-verdict { font-size: 0.73rem; font-weight: 600; padding: 3px 8px; border-radius: 100px; white-space: nowrap; }
+  .hv-fake { background: rgba(255,107,107,0.1); color: var(--fake); }
+  .hv-verified { background: rgba(67,233,123,0.1); color: var(--verified); }
+  .hv-suspicious { background: rgba(255,179,71,0.1); color: var(--suspicious); }
+  .hv-stylefake { background: rgba(255,140,105,0.1); color: var(--stylefake); }
+
+  /* IMAGE ORIGIN BADGE */
+  .image-origin-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid;
+  }
+  .image-origin-box.ai    { background: rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.25); }
+  .image-origin-box.real  { background: rgba(67,233,123,0.08); border-color: rgba(67,233,123,0.25); }
+  .image-origin-box.manip { background: rgba(255,179,71,0.08);  border-color: rgba(255,179,71,0.25); }
+  .image-origin-box.unk   { background: rgba(136,136,168,0.08); border-color: rgba(136,136,168,0.2); }
+  .origin-icon { font-size: 1.6rem; flex-shrink: 0; }
+  .origin-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+  .origin-value { font-size: 0.95rem; font-weight: 600; }
+  .origin-value.ai    { color: var(--accent); }
+  .origin-value.real  { color: var(--verified); }
+  .origin-value.manip { color: var(--suspicious); }
+  .origin-value.unk   { color: var(--muted); }
+  .origin-reason { font-size: 0.8rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .origin-conf { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* ERROR BOX */
+  .error-box {
+    background: rgba(255,107,107,0.06);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--fake);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  /* PAGES */
+  .page-view { display: none; }
+  .page-view.active { display: block; }
+
+  /* ── DEBUG CONSOLE ── */
+  #debug-panel {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 360px;
+    max-height: 280px;
+    background: #0d0d14;
+    border: 1px solid rgba(108,99,255,0.4);
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  #debug-header {
+    padding: 6px 10px;
+    background: rgba(108,99,255,0.15);
+    border-bottom: 1px solid rgba(108,99,255,0.2);
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #a5a0ff;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  #debug-header button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 4px;
+  }
+  #debug-header button:hover { color: var(--fake); }
+  #debug-log {
+    overflow-y: auto;
+    padding: 8px 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .dlog { color: #8888a8; line-height: 1.4; }
+  .dlog.ok  { color: #43e97b; }
+  .dlog.err { color: #ff6b6b; }
+  .dlog.warn{ color: #ffb347; }
+  .dlog.info{ color: #a5a0ff; }
+  .dlog .ts { opacity: 0.4; margin-right: 6px; }
+
+  @media (max-width: 1024px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .result-grid { grid-template-columns: 1fr; }
+    #debug-panel { width: calc(100vw - 2rem); right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- DEBUG CONSOLE -->
+<div id="debug-panel">
+  <div id="debug-header">
+    <span>🛠 VeritAI Debug Console</span>
+    <div style="display:flex;gap:6px">
+      <button onclick="clearDebug()" title="Clear">✕ clear</button>
+      <button onclick="document.getElementById('debug-panel').style.display='none'" title="Hide">hide</button>
+    </div>
+  </div>
+  <div id="debug-log"></div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Verit<span>AI</span></div>
+
+  <p class="sidebar-section">Menu</p>
+  <a class="nav-item active" data-page="analyze" onclick="showPage('analyze', this)">
+    <span class="nav-icon">🔍</span> Analyze
+  </a>
+  <a class="nav-item" data-page="history" onclick="showPage('history', this)">
+    <span class="nav-icon">📋</span> History
+  </a>
+
+  <p class="sidebar-section">Insights</p>
+  <a class="nav-item" data-page="stats" onclick="showPage('stats', this)">
+    <span class="nav-icon">📊</span> My Stats
+  </a>
+
+  <div class="sidebar-bottom">
+    <div class="user-popup-wrap">
+      <div class="user-popup" id="user-popup">
+        <div class="popup-header">
+          <div class="popup-name" id="popup-name">User</div>
+          <div class="popup-email" id="popup-email">-</div>
+        </div>
+        <div class="theme-toggle-row" onclick="toggleTheme()">
+          <div class="theme-left">
+            <span class="pi-icon" id="theme-icon">☀️</span>
+            <span id="theme-label">Light Mode</span>
+          </div>
+          <div class="toggle-switch" id="theme-switch">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div class="popup-divider"></div>
+        <button class="popup-item" onclick="openSettings()">
+          <span class="pi-icon">⚙️</span> Settings
+        </button>
+        <div class="popup-divider"></div>
+        <button class="popup-item danger" onclick="logout()">
+          <span class="pi-icon">🚪</span> Sign out
+        </button>
+      </div>
+      <div class="user-pill" id="user-pill" onclick="togglePopup(event)">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Loading...</div>
+          <div class="user-email" id="sidebar-email">-</div>
+        </div>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:auto">▲</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <h1 id="page-title">Analyze News</h1>
+    <div class="topbar-right">
+      <div class="status-badge" id="backend-status">
+        <div class="status-dot"></div>
+        Checking...
+      </div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ANALYZE PAGE -->
+    <div class="page-view active" id="page-analyze">
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-label">Total analyzed</div>
+          <div class="stat-card-value" id="stat-total">0</div>
+          <div class="stat-card-sub">all time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Fake detected</div>
+          <div class="stat-card-value" style="color:var(--fake)" id="stat-fake">0</div>
+          <div class="stat-card-sub">this session</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Verified</div>
+          <div class="stat-card-value" style="color:var(--verified)" id="stat-verified">0</div>
+          <div class="stat-card-sub">this session</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Suspicious</div>
+          <div class="stat-card-value" style="color:var(--suspicious)" id="stat-suspicious">0</div>
+          <div class="stat-card-sub">this session</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="analysis-panel">
+          <div class="panel-header">
+            <h2>News Analyzer</h2>
+          </div>
+          <div class="panel-body">
+            <div class="tabs">
+              <button class="tab active" onclick="switchTab('text', this)">📝 Text</button>
+              <button class="tab" onclick="switchTab('image', this)">🖼️ Image</button>
+            </div>
+
+            <div class="tab-content active" id="tab-text">
+              <textarea id="text-input" placeholder="Paste a headline, article excerpt, or any news text here..."></textarea>
+            </div>
+
+            <div class="tab-content" id="tab-image">
+              <div class="upload-zone" onclick="document.getElementById('image-input').click()">
+                <div class="upload-icon">📂</div>
+                <p><strong>Click to upload</strong> or drag and drop<br>Screenshots from WhatsApp, Facebook, Twitter, etc.</p>
+              </div>
+              <input type="file" id="image-input" accept="image/*" onchange="handleImageUpload(event)">
+              <img id="image-preview" alt="Preview">
+            </div>
+
+            <button class="analyze-btn" id="analyze-btn" onclick="runAnalysis()">
+              <div class="spinner" id="spinner"></div>
+              <span id="btn-text">Run Analysis →</span>
+            </button>
+
+            <div class="result-area" id="result-area">
+              <div id="result-inner"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feed-panel">
+          <div class="panel-header">
+            <h2>Live Headlines</h2>
+            <button class="refresh-btn" onclick="loadFeed()">↻ Refresh</button>
+          </div>
+          <div id="feed-content">
+            <div class="feed-loading">Loading headlines...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div class="page-view" id="page-history">
+      <div class="analysis-panel">
+        <div class="panel-header">
+          <h2>Analysis History</h2>
+          <button class="refresh-btn" onclick="clearHistory()" style="color:var(--fake)">Clear all</button>
+        </div>
+        <div class="panel-body" id="history-content">
+          <p style="color:var(--muted);font-size:0.9rem">No analyses yet. Start by analyzing some news!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS PAGE -->
+    <div class="page-view" id="page-stats">
+      <div class="analysis-panel">
+        <div class="panel-header">
+          <h2>My Statistics</h2>
+        </div>
+        <div class="panel-body" id="stats-content">
+          <p style="color:var(--muted);font-size:0.9rem">Analyze some news to see your stats!</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // ══════════════════════════════════════════
+  //  DEBUG CONSOLE
+  // ══════════════════════════════════════════
+
+  function dbg(msg, type = 'info') {
+    const log = document.getElementById('debug-log');
+    if (!log) return;
+    const now = new Date().toLocaleTimeString('en-IN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const el = document.createElement('div');
+    el.className = `dlog ${type}`;
+    el.innerHTML = `<span class="ts">${now}</span>${msg}`;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+    // Also log to real console
+    const fn = type === 'err' ? console.error : type === 'warn' ? console.warn : console.log;
+    fn(`[VeritAI] ${msg}`);
+  }
+  function clearDebug() {
+    document.getElementById('debug-log').innerHTML = '';
+  }
+
+  // ══════════════════════════════════════════
+  //  CONFIG
+  // ══════════════════════════════════════════
+  const API = 'http://127.0.0.1:5001/api';
+  let activeTab = 'text';
+  let uploadedFile = null;
+  let history = [];
+  let sessionStats = { total: 0, fake: 0, verified: 0, suspicious: 0 };
+
+
+  // ══════════════════════════════════════════
+  //  AUTH — FIXED & ROBUST
+  // // ══════════════════════════════════════════
+  // function redirectToLogin() {
+  //   dbg('Redirecting to login...', 'warn');
+  //   // Use relative path so it works regardless of port/server
+  //   window.location.replace('login.html');
+  // }
+
+  function getStoredUser() {
+    // Try both possible keys
+    const raw = localStorage.getItem('veritai_user') || sessionStorage.getItem('veritai_user') || localStorage.getItem('veritai_current_user');
+    dbg(`Raw stored user → ${raw ? raw.substring(0, 80) + '...' : 'null'}`, raw ? 'info' : 'warn');
+    try {
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      dbg(`JSON parse error: ${e.message}`, 'err');
+      return null;
+    }
+  }
+
+  function normalizeUser(user) {
+    if (!user || typeof user !== 'object') {
+      dbg('normalizeUser: user is null/not object', 'err');
+      return null;
+    }
+
+    dbg(`normalizeUser input keys: ${Object.keys(user).join(', ')}`, 'info');
+
+    const firstname = (user.firstname || user.first_name || 'User').trim();
+    const lastname  = (user.lastname  || user.last_name  || '').trim();
+    const email     = (user.email     || '').trim();
+    // ✅ FIX: Accept any kind of id field, and fallback to email
+    const id        = user.id || user.user_id || user._id || user.uid || email;
+
+    // ✅ FIX: Only require email — not both id AND email
+    if (!email) {
+      dbg('normalizeUser: email missing — cannot authenticate', 'err');
+      return null;
+    }
+
+    const normalized = { id, firstname, lastname, email };
+    dbg(`normalizeUser OK → id:${id}, name:${firstname} ${lastname}, email:${email}`, 'ok');
+    return normalized;
+  }
+
+  // ══════════════════════════════════════════
+  //  BOOT — run auth check on page load
+  // ══════════════════════════════════════════
+  dbg('Dashboard loading...', 'info');
+
+  const token = localStorage.getItem('veritai_token') || sessionStorage.getItem('veritai_token');
+  dbg(`Token → ${token ? token.substring(0, 20) + '...' : 'MISSING'}`, token ? 'ok' : 'err');
+
+  const rawUser = getStoredUser();
+  const currentUser = normalizeUser(rawUser);
+
+  // if (!token || !currentUser) {
+  //   dbg('Auth failed → redirecting to login', 'err');
+  //   redirectToLogin();
+  // } else {
+  //   dbg('Auth OK — loading dashboard', 'ok');
+
+    localStorage.setItem('veritai_user', JSON.stringify(currentUser));
+    localStorage.setItem('veritai_token', token);
+    sessionStorage.setItem('veritai_user', JSON.stringify(currentUser));
+    sessionStorage.setItem('veritai_token', token);
+
+    const fullName = [currentUser.firstname, currentUser.lastname].filter(Boolean).join(' ');
+    const initials = ((currentUser.firstname?.[0] || '') + (currentUser.lastname?.[0] || '')).toUpperCase() || 'U';
+
+    document.getElementById('sidebar-name').textContent = fullName || 'User';
+    document.getElementById('sidebar-email').textContent = currentUser.email;
+    document.getElementById('sidebar-avatar').textContent = initials;
+
+    dbg(`UI updated — welcome ${fullName || currentUser.email}`, 'ok');
+  
+
+  // ══════════════════════════════════════════
+  //  LOGOUT
+  // ══════════════════════════════════════════
+  function logout() {
+    dbg('Logging out...', 'warn');
+    localStorage.removeItem('veritai_token');
+    localStorage.removeItem('veritai_user');
+    localStorage.removeItem('veritai_current_user');
+    sessionStorage.removeItem('veritai_token');
+    sessionStorage.removeItem('veritai_user');
+    window.location.href = "login.html";
+  }
+
+  // ══════════════════════════════════════════
+  //  SESSION STATE
+  // ══════════════════════════════════════════
+
+  try {
+    history = JSON.parse(localStorage.getItem('veritai_history_' + (currentUser?.id || 'guest')) || '[]');
+    dbg(`History loaded — ${history.length} entries`, 'ok');
+  } catch (e) {
+    dbg(`History load error: ${e.message}`, 'warn');
+    history = [];
+  }
+
+
+
+  updateStats();
+
+  // ══════════════════════════════════════════
+  //  NAVIGATION
+  // ══════════════════════════════════════════
+  function showPage(page, el) {
+    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    el.classList.add('active');
+    const titles = { analyze: 'Analyze News', history: 'History', stats: 'My Stats' };
+    document.getElementById('page-title').textContent = titles[page];
+    if (page === 'history') renderHistory();
+    if (page === 'stats') renderStatsPage();
+  }
+
+  // ══════════════════════════════════════════
+  //  TABS
+  // ══════════════════════════════════════════
+  function switchTab(tab, el) {
+    activeTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  // ══════════════════════════════════════════
+  //  IMAGE UPLOAD
+  // ══════════════════════════════════════════
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    uploadedFile = file;
+    const preview = document.getElementById('image-preview');
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    dbg(`Image selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`, 'info');
+  }
+
+  // ══════════════════════════════════════════
+  //  BACKEND STATUS
+  // ══════════════════════════════════════════
+  async function checkBackend() {
+    const badge = document.getElementById('backend-status');
+    dbg(`Checking backend at ${API}/health ...`, 'info');
+    try {
+      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) {
+        badge.innerHTML = '<div class="status-dot"></div> Backend online';
+        badge.style.color = 'var(--verified)';
+        badge.style.borderColor = 'rgba(67,233,123,0.2)';
+        badge.style.background = 'rgba(67,233,123,0.08)';
+        dbg('Backend online ✓', 'ok');
+        return true;
+      }
+      dbg(`Backend returned status ${r.status}`, 'warn');
+    } catch(e) {
+      dbg(`Backend check failed: ${e.message}`, 'err');
+    }
+    badge.innerHTML = '<div class="status-dot" style="background:var(--fake)"></div> Backend offline';
+    badge.style.color = 'var(--fake)';
+    badge.style.borderColor = 'rgba(255,107,107,0.2)';
+    badge.style.background = 'rgba(255,107,107,0.08)';
+    return false;
+  }
+  checkBackend();
+
+  // ══════════════════════════════════════════
+  //  ANALYSIS
+  // ══════════════════════════════════════════
+  async function runAnalysis() {
+    const btn = document.getElementById('analyze-btn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btn-text');
+    const resultArea = document.getElementById('result-area');
+    const resultInner = document.getElementById('result-inner');
+
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Analyzing...';
+    resultArea.classList.remove('visible');
+
+    try {
+      let response;
+
+      if (activeTab === 'text') {
+        const text = document.getElementById('text-input').value.trim();
+        if (!text) throw new Error('Please enter some text to analyze.');
+        dbg(`Sending text analysis (${text.length} chars)...`, 'info');
+        response = await fetch(`${API}/analyze/text`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text }),
+          signal: AbortSignal.timeout(15000)
+        });
+      } else {
+        if (!uploadedFile) throw new Error('Please upload an image first.');
+        dbg(`Sending image analysis: ${uploadedFile.name}`, 'info');
+        const formData = new FormData();
+        formData.append('image', uploadedFile);
+        response = await fetch(`${API}/analyze/image`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+          signal: AbortSignal.timeout(15000)
+        });
+      }
+
+      dbg(`Response status: ${response.status}`, response.ok ? 'ok' : 'err');
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `Backend error ${response.status}`);
+      }
+
+      const data = await response.json();
+      dbg(`Analysis result: verdict=${data.verdict}, confidence=${data.confidence}`, 'ok');
+      renderResult(data);
+      saveToHistory(data);
+      updateSessionStats(data);
+
+    } catch (err) {
+      dbg(`Analysis error: ${err.message}`, 'err');
+      resultInner.innerHTML = `<div class="error-box">
+        <strong>⚠️ Error:</strong> ${err.message}<br>
+        <small style="opacity:0.7;margin-top:6px;display:block">Make sure you've started the backend: <code>python app.py</code></small>
+      </div>`;
+      resultArea.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Run Analysis →';
+    }
+  }
+
+  // ══════════════════════════════════════════
+  //  RENDER RESULT
+  // ══════════════════════════════════════════
+  function renderResult(data) {
+    const verdict    = (data.verdict || '').toUpperCase();
+    const confidence = data.confidence || data.confidence_score || 0;
+    const credibility = data.credibility_score || 0;
+    const entities   = data.entities || {};
+    const suspicious = data.suspicious_phrases || [];
+    // reasoning can be an object or string — format it properly
+    let reasoning = '';
+    if (data.reasoning && typeof data.reasoning === 'object') {
+      reasoning = Object.entries(data.reasoning)
+        .filter(([k, v]) => v && v !== 'N/A')
+        .map(([k, v]) => `<strong>${k.replace(/_/g,' ').toUpperCase()}:</strong> ${v}`)
+        .join('<br><br>');
+    } else {
+      reasoning = data.reasoning || data.explanation || '';
+    }
+    const factContext = data.fact_context || '';
+    const xai        = data.xai_explanation || '';
+
+    // Image origin fields (only present for image analysis)
+    const imageOrigin     = (data.image_origin || '').toUpperCase();
+    const originConf      = data.image_origin_confidence || 0;
+    const originReason    = data.image_origin_reason || '';
+    const isImageAnalysis = data.source_type === 'image' || !!imageOrigin;
+
+    // Debug: log full data so we can see what backend returned
+    console.log('[VeritAI] Full result data:', JSON.stringify(data, null, 2));
+
+    let vClass = 'v-suspicious', vLabel = '🟡 SUSPICIOUS';
+    if (verdict.includes('FAKE') && !verdict.includes('STYLE')) { vClass = 'v-fake'; vLabel = '🔴 FAKE NEWS'; }
+    else if (verdict.includes('VERIFIED') || verdict.includes('REAL')) { vClass = 'v-verified'; vLabel = '🟢 VERIFIED'; }
+    else if (verdict.includes('STYLE')) { vClass = 'v-stylefake'; vLabel = '🟠 STYLE FAKE'; }
+
+    const confColor = confidence > 70 ? 'var(--accent)' : confidence > 40 ? 'var(--suspicious)' : 'var(--muted)';
+    const credColor = credibility > 70 ? 'var(--verified)' : credibility > 40 ? 'var(--suspicious)' : 'var(--fake)';
+
+    // Build image origin badge
+    let originHTML = '';
+    if (isImageAnalysis && imageOrigin) {
+      let oIcon, oCls, oText;
+      if (imageOrigin === 'AI_GENERATED') {
+        oIcon = '🤖'; oCls = 'ai'; oText = 'AI Generated';
+      } else if (imageOrigin === 'REAL_PHOTO') {
+        oIcon = '📷'; oCls = 'real'; oText = 'Real Photo';
+      } else if (imageOrigin === 'MANIPULATED') {
+        oIcon = '✂️'; oCls = 'manip'; oText = 'Manipulated / Edited';
+      } else {
+        oIcon = '❓'; oCls = 'unk'; oText = 'Uncertain';
+      }
+      originHTML = `
+        <div class="image-origin-box ${oCls}">
+          <div class="origin-icon">${oIcon}</div>
+          <div>
+            <div class="origin-label">Image Origin</div>
+            <div class="origin-value ${oCls}">${oText}</div>
+            ${originReason ? `<div class="origin-reason">${originReason}</div>` : ''}
+            ${originConf ? `<div class="origin-conf">Detection confidence: ${originConf}%</div>` : ''}
+          </div>
+        </div>`;
+    }
+
+    let entityTags = '';
+    if (Array.isArray(entities)) {
+      // Array of {text, type} objects from backend
+      entities.forEach(e => {
+        const t = (e.type || '').toLowerCase();
+        const cls = t.includes('person') ? 'person' : t.includes('org') ? 'org' : '';
+        entityTags += `<span class="tag ${cls}">${e.type || ''}: ${e.text || e}</span>`;
+      });
+    } else if (entities && typeof entities === 'object') {
+      Object.entries(entities).forEach(([type, values]) => {
+        const arr = Array.isArray(values) ? values : [values];
+        arr.forEach(v => {
+          const cls = type.toLowerCase().includes('person') ? 'person' : type.toLowerCase().includes('org') ? 'org' : '';
+          entityTags += `<span class="tag ${cls}">${type}: ${v}</span>`;
+        });
+      });
+    }
+
+    let suspTags = suspicious.map(p => `<span class="tag warn">⚠️ ${p}</span>`).join('');
+
+    const resultHTML = `
+      ${originHTML}
+      <div class="verdict-header">
+        <span class="verdict-badge ${vClass}">${vLabel}</span>
+      </div>
+      <div class="confidence-row">
+        <div class="conf-block">
+          <div class="conf-label">Confidence</div>
+          <div class="conf-bar-wrap">
+            <div class="conf-bar"><div class="conf-fill" style="width:${confidence}%; background:${confColor}"></div></div>
+            <span class="conf-pct">${confidence}%</span>
+          </div>
+        </div>
+        <div class="conf-block">
+          <div class="conf-label">Credibility Score</div>
+          <div class="conf-bar-wrap">
+            <div class="conf-bar"><div class="conf-fill" style="width:${credibility}%; background:${credColor}"></div></div>
+            <span class="conf-pct">${credibility}/100</span>
+          </div>
+        </div>
+      </div>
+      <div class="result-grid">
+        ${reasoning ? `<div class="result-box full"><h4>AI Reasoning</h4><p>${reasoning}</p></div>` : ''}
+        ${entityTags ? `<div class="result-box"><h4>Named Entities</h4><div class="tag-list">${entityTags}</div></div>` : ''}
+        ${suspTags ? `<div class="result-box"><h4>Suspicious Phrases</h4><div class="tag-list">${suspTags}</div></div>` : ''}
+        ${factContext ? `<div class="result-box full"><h4>Fact Context</h4><p>${factContext}</p></div>` : ''}
+        ${xai ? `<div class="result-box full"><h4>XAI Summary</h4><p>${xai}</p></div>` : ''}
+      </div>
+    `;
+
+    document.getElementById('result-inner').innerHTML = resultHTML;
+    document.getElementById('result-area').classList.add('visible');
+  }
+
+  // ══════════════════════════════════════════
+  //  HISTORY
+  // ══════════════════════════════════════════
+  function saveToHistory(data) {
+    const text = activeTab === 'text'
+      ? document.getElementById('text-input').value.trim().slice(0, 200)
+      : '[Image upload]';
+    const entry = {
+      text,
+      verdict: data.verdict || 'Unknown',
+      confidence: data.confidence || 0,
+      timestamp: new Date().toISOString()
+    };
+    history.unshift(entry);
+    if (history.length > 50) history = history.slice(0, 50);
+    localStorage.setItem('veritai_history_' + (currentUser?.id || 'guest'), JSON.stringify(history));
+    dbg(`History saved — ${history.length} total entries`, 'ok');
+  }
+
+  function updateSessionStats(data) {
+    const v = (data.verdict || '').toUpperCase();
+    sessionStats.total++;
+    if (v.includes('FAKE') && !v.includes('STYLE')) sessionStats.fake++;
+    else if (v.includes('VERIFIED') || v.includes('REAL')) sessionStats.verified++;
+    else sessionStats.suspicious++;
+    updateStats();
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent = history.length;
+    document.getElementById('stat-fake').textContent = sessionStats.fake;
+    document.getElementById('stat-verified').textContent = sessionStats.verified;
+    document.getElementById('stat-suspicious').textContent = sessionStats.suspicious;
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('history-content');
+    if (!history.length) {
+      container.innerHTML = '<p style="color:var(--muted);font-size:0.9rem">No analyses yet.</p>';
+      return;
+    }
+    container.innerHTML = history.map(h => {
+      const v = (h.verdict || '').toUpperCase();
+      let cls = 'hv-suspicious', label = '🟡 Suspicious';
+      if (v.includes('FAKE') && !v.includes('STYLE')) { cls = 'hv-fake'; label = '🔴 Fake'; }
+      else if (v.includes('VERIFIED') || v.includes('REAL')) { cls = 'hv-verified'; label = '🟢 Verified'; }
+      else if (v.includes('STYLE')) { cls = 'hv-stylefake'; label = '🟠 Style Fake'; }
+      const date = new Date(h.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+      return `<div class="history-item">
+        <div>
+          <div class="history-text">${h.text}</div>
+          <div style="font-size:0.73rem;color:var(--muted);margin-top:4px">${date}</div>
+        </div>
+        <span class="history-verdict ${cls}">${label}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function clearHistory() {
+    if (!confirm('Clear all analysis history?')) return;
+    history = [];
+    localStorage.removeItem('veritai_history_' + (currentUser?.id || 'guest'));
+    renderHistory();
+    updateStats();
+    dbg('History cleared', 'warn');
+  }
+
+  function renderStatsPage() {
+    const total = history.length;
+    const fakeCount = history.filter(h => h.verdict.toUpperCase().includes('FAKE') && !h.verdict.toUpperCase().includes('STYLE')).length;
+    const verifiedCount = history.filter(h => h.verdict.toUpperCase().includes('VERIFIED') || h.verdict.toUpperCase().includes('REAL')).length;
+    const suspCount = history.filter(h => h.verdict.toUpperCase().includes('SUSPICIOUS')).length;
+    const styleCount = history.filter(h => h.verdict.toUpperCase().includes('STYLE')).length;
+
+    document.getElementById('stats-content').innerHTML = total === 0
+      ? '<p style="color:var(--muted);font-size:0.9rem">Analyze some news to see your stats!</p>'
+      : `
+        <div class="stats-row" style="margin-bottom:1.5rem">
+          <div class="stat-card"><div class="stat-card-label">Total</div><div class="stat-card-value">${total}</div></div>
+          <div class="stat-card"><div class="stat-card-label">Fake News</div><div class="stat-card-value" style="color:var(--fake)">${fakeCount}</div></div>
+          <div class="stat-card"><div class="stat-card-label">Verified</div><div class="stat-card-value" style="color:var(--verified)">${verifiedCount}</div></div>
+          <div class="stat-card"><div class="stat-card-label">Suspicious</div><div class="stat-card-value" style="color:var(--suspicious)">${suspCount + styleCount}</div></div>
+        </div>
+        <div class="result-box">
+          <h4>Breakdown</h4>
+          ${bar('Fake News', fakeCount, total, 'var(--fake)')}
+          ${bar('Verified', verifiedCount, total, 'var(--verified)')}
+          ${bar('Suspicious', suspCount, total, 'var(--suspicious)')}
+          ${bar('Style Fake', styleCount, total, 'var(--stylefake)')}
+        </div>
+      `;
+  }
+
+  function bar(label, count, total, color) {
+    const pct = total ? Math.round(count / total * 100) : 0;
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:5px">
+        <span style="color:var(--muted)">${label}</span>
+        <span style="font-weight:500">${count} (${pct}%)</span>
+      </div>
+      <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 0.6s"></div>
+      </div>
+    </div>`;
+  }
+
+  // ══════════════════════════════════════════
+  //  LIVE FEED
+  // ══════════════════════════════════════════
+  async function loadFeed() {
+    const container = document.getElementById('feed-content');
+    container.innerHTML = '<div class="feed-loading">Loading headlines...</div>';
+    dbg('Loading news feed...', 'info');
+    try {
+      const r = await fetch('http://127.0.0.1:5001/api/news', { signal: AbortSignal.timeout(8000) });
+      const data = await r.json();
+      const headlines = data.headlines || data || [];
+      if (!headlines.length) throw new Error('No headlines returned');
+      dbg(`Feed loaded — ${headlines.length} headlines`, 'ok');
+      container.innerHTML = headlines.slice(0, 8).map(h => `
+        <div class="feed-item" onclick="analyzeHeadline('${(h.title || h).replace(/'/g, "\\'")}')">
+          <div class="feed-source">${h.source || 'News'}</div>
+          <div class="feed-headline">${h.title || h}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      dbg(`Feed error: ${e.message}`, 'warn');
+      container.innerHTML = `
+        <div class="feed-loading">
+          <div style="margin-bottom:8px">Could not load live headlines.</div>
+          <small>Backend must be running.</small>
+        </div>
+        ${[
+          { source: 'Sample', title: 'RBI keeps repo rate unchanged at 6.5%' },
+          { source: 'Sample', title: 'Scientists discover miracle cure doctors hide' },
+          { source: 'Sample', title: 'Supreme Court issues notice on electoral bonds' },
+          { source: 'Sample', title: 'Bill Gates microchip COVID vaccine conspiracy' },
+        ].map(h => `
+          <div class="feed-item" onclick="analyzeHeadline('${h.title}')">
+            <div class="feed-source">${h.source}</div>
+            <div class="feed-headline">${h.title}</div>
+          </div>`).join('')}`;
+    }
+  }
+
+  function analyzeHeadline(text) {
+    showPage('analyze', document.querySelector('[data-page="analyze"]'));
+    switchTab('text', document.querySelector('.tab'));
+    document.getElementById('text-input').value = text;
+    document.getElementById('tab-text').classList.add('active');
+    document.getElementById('tab-image').classList.remove('active');
+    runAnalysis();
+  }
+
+  // ══════════════════════════════════════════
+  //  USER POPUP
+  // ══════════════════════════════════════════
+  function togglePopup(e) {
+    e.stopPropagation();
+    document.getElementById('user-popup').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const popup = document.getElementById('user-popup');
+    const pill  = document.getElementById('user-pill');
+    if (pill && !pill.contains(e.target) && !popup.contains(e.target)) {
+      popup.classList.remove('open');
+    }
+  });
+
+  // ══════════════════════════════════════════
+  //  THEME — Dark / Light
+  // ══════════════════════════════════════════
+  function applyTheme(isLight) {
+    const sw    = document.getElementById('theme-switch');
+    const icon  = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (isLight) {
+      document.body.classList.add('light');
+      if (sw)    sw.classList.add('on');
+      if (icon)  icon.textContent  = '🌙';
+      if (label) label.textContent = 'Dark Mode';
+    } else {
+      document.body.classList.remove('light');
+      if (sw)    sw.classList.remove('on');
+      if (icon)  icon.textContent  = '☀️';
+      if (label) label.textContent = 'Light Mode';
+    }
+    localStorage.setItem('veritai_theme', isLight ? 'light' : 'dark');
+  }
+  function toggleTheme() {
+    const isNowLight = localStorage.getItem('veritai_theme') !== 'light';
+    applyTheme(isNowLight);
+    dbg('Theme → ' + (isNowLight ? 'light' : 'dark'), 'info');
+  }
+  // Apply saved theme on load
+  applyTheme(localStorage.getItem('veritai_theme') === 'light');
+
+  // ══════════════════════════════════════════
+  //  SETTINGS
+  // ══════════════════════════════════════════
+  function openSettings() {
+    document.getElementById('user-popup').classList.remove('open');
+    alert('⚙️ Settings\n\nComing soon — account preferences, API key management, notifications, and more.');
+  }
+
+  // Sync popup name/email with sidebar
+  const _pName  = document.getElementById('popup-name');
+  const _pEmail = document.getElementById('popup-email');
+  if (_pName)  _pName.textContent  = document.getElementById('sidebar-name')?.textContent  || 'User';
+  if (_pEmail) _pEmail.textContent = document.getElementById('sidebar-email')?.textContent || '-';
+
+  loadFeed();
+  dbg('Dashboard ready ✓', 'ok');
+</script>
+</body>
+</html>

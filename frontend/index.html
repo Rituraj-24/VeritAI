@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeritAI — Truth at the Speed of News</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: rgba(255,255,255,0.07);
+    --accent: #6c63ff;
+    --accent2: #ff6b6b;
+    --accent3: #43e97b;
+    --text: #f0f0f8;
+    --muted: #8888a8;
+    --verified: #43e97b;
+    --fake: #ff6b6b;
+    --suspicious: #ffb347;
+    --stylefake: #ff8c69;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  nav .nav-links { display: flex; gap: 2rem; align-items: center; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+  nav a:hover { color: var(--text); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+  }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); border-color: rgba(255,255,255,0.15); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #7c75ff; transform: translateY(-1px); }
+  .btn-lg { padding: 0.85rem 2rem; font-size: 1rem; border-radius: 10px; }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    z-index: 1;
+  }
+  .hero-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(108,99,255,0.12);
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 100px;
+    font-size: 0.78rem;
+    color: #a5a0ff;
+    margin-bottom: 1.8rem;
+    animation: fadeDown 0.6s ease both;
+  }
+  .hero-badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  /* VERDICT PREVIEW STRIP */
+  .verdict-strip {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 3.5rem;
+    animation: fadeUp 0.6s ease 0.5s both;
+  }
+  .verdict-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid;
+  }
+  .chip-fake { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.25); color: #ff6b6b; }
+  .chip-verified { background: rgba(67,233,123,0.08); border-color: rgba(67,233,123,0.25); color: #43e97b; }
+  .chip-suspicious { background: rgba(255,179,71,0.08); border-color: rgba(255,179,71,0.25); color: #ffb347; }
+  .chip-style { background: rgba(255,140,105,0.08); border-color: rgba(255,140,105,0.25); color: #ff8c69; }
+
+  /* FEATURES */
+  .section {
+    padding: 5rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .section-label {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .section h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 1rem;
+  }
+  .section p.sub {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .feature-card {
+    background: var(--surface);
+    padding: 2rem;
+    transition: background 0.2s;
+  }
+  .feature-card:hover { background: var(--surface2); }
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    counter-reset: steps;
+  }
+  .step {
+    position: relative;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    counter-increment: steps;
+  }
+  .step::before {
+    content: counter(steps, decimal-leading-zero);
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: rgba(108,99,255,0.12);
+    position: absolute;
+    top: 1rem; right: 1.2rem;
+    line-height: 1;
+  }
+  .step h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .step p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 4rem 2rem;
+    text-align: center;
+    z-index: 1;
+    position: relative;
+  }
+  .cta-box {
+    max-width: 640px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3.5rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .cta-box h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 1rem;
+  }
+  .cta-box p { color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 1;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 1rem 0 0;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .stat { text-align: center; }
+  .stat-number { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Verit<span>AI</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="login.html" class="btn btn-ghost">Sign in</a>
+    <a href="register.html" class="btn btn-primary">Get started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">
+    <div class="hero-badge-dot"></div>
+    AI-powered fake news detection
+  </div>
+  <h1>Stop Misinformation<br>Before It Spreads <em>.</em></h1>
+  <p>VeritAI uses advanced AI to analyze news articles, images, and headlines in seconds — giving you the truth behind the story.</p>
+  <div class="hero-actions">
+    <a href="register.html" class="btn btn-primary btn-lg">Start for free →</a>
+    <a href="login.html" class="btn btn-ghost btn-lg">Sign in</a>
+  </div>
+  <div class="verdict-strip">
+    <div class="verdict-chip chip-fake">🔴 FAKE NEWS</div>
+    <div class="verdict-chip chip-verified">🟢 VERIFIED</div>
+    <div class="verdict-chip chip-suspicious">🟡 SUSPICIOUS</div>
+    <div class="verdict-chip chip-style">🟠 STYLE FAKE</div>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-number">98.4%</div><div class="stat-label">Detection accuracy</div></div>
+  <div class="stat"><div class="stat-number">3s</div><div class="stat-label">Average analysis time</div></div>
+  <div class="stat"><div class="stat-number">4+</div><div class="stat-label">Analysis methods</div></div>
+  <div class="stat"><div class="stat-number">∞</div><div class="stat-label">News sources tracked</div></div>
+</div>
+
+<section class="section" id="features">
+  <p class="section-label">What we detect</p>
+  <h2>Every type of misinformation.<br>One platform.</h2>
+  <p class="sub">From WhatsApp forwards to political propaganda, VeritAI identifies fake content across all formats.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(108,99,255,0.12)">📝</div>
+      <h3>Text Analysis</h3>
+      <p>Paste any headline or article. Our ML model identifies manipulative language, clickbait patterns, and factual inconsistencies.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(67,233,123,0.12)">🖼️</div>
+      <h3>Image OCR</h3>
+      <p>Upload screenshots from WhatsApp, Facebook, or Twitter. AI reads and analyzes the embedded text automatically.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(255,179,71,0.12)">📡</div>
+      <h3>Live Headlines</h3>
+      <p>Real-time feed from Reuters, Times of India, and more. Click any headline for instant analysis.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(255,107,107,0.12)">🧠</div>
+      <h3>XAI Reasoning</h3>
+      <p>Not just a verdict — full explainability. See exactly why AI flagged a piece of content as fake or verified.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(108,99,255,0.12)">🔍</div>
+      <h3>Entity Extraction</h3>
+      <p>Identifies people, organizations, and locations mentioned — helping you trace the source of claims.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(67,233,123,0.12)">📊</div>
+      <h3>Confidence Scoring</h3>
+      <p>Every verdict comes with a confidence percentage and credibility score so you know how certain the AI is.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <p class="section-label">How it works</p>
+  <h2>From claim to verdict<br>in three steps.</h2>
+  <p class="sub">No journalism degree required. VeritAI does the heavy lifting for you.</p>
+  <div class="steps">
+    <div class="step">
+      <h3>Submit Content</h3>
+      <p>Paste text, upload an image, or click a live headline from our real-time news feed.</p>
+    </div>
+    <div class="step">
+      <h3>AI Analysis</h3>
+      <p>Four engines run simultaneously: ML prediction, fact-checking, semantic analysis, and source credibility scoring.</p>
+    </div>
+    <div class="step">
+      <h3>Get the Verdict</h3>
+      <p>Receive a clear verdict with confidence score, reasoning, named entities, and suspicious phrase highlights.</p>
+    </div>
+    <div class="step">
+      <h3>Stay Informed</h3>
+      <p>Track your analysis history and monitor trending misinformation topics in your personal dashboard.</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="cta-box">
+    <h2>Fight fake news today.</h2>
+    <p>Join thousands of journalists, researchers, and curious citizens who use VeritAI to cut through the noise.</p>
+    <a href="register.html" class="btn btn-primary btn-lg">Create free account →</a>
+  </div>
+</div>
+
+<footer>
+  <p>© 2025 VeritAI. Built for a more truthful internet. &nbsp;·&nbsp; <a href="#">Privacy</a> &nbsp;·&nbsp; <a href="#">Terms</a></p>
+</footer>
+
+</body>
+</html>
