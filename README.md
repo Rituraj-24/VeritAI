@@ -9,36 +9,31 @@ VeritAI is an AI-powered web application that detects fake news from **text** an
 
 ### 🏠 Home Page
 
-![Home](<img width="1870" height="904" alt="Screenshot 2026-04-13 215530" src="https://github.com/user-attachments/assets/d74bf981-ff9a-449f-91bf-6fa8beb4305a" />
-)
+![Home](screenshots/home.png)
 
 ---
 
 ### 🔐 Login
 
-![Login](<img width="1919" height="859" alt="Screenshot 2026-04-05 233359" src="https://github.com/user-attachments/assets/a7824768-ba1c-4ea1-935d-89408e1fc060" />
-)
+![Login](screenshots/login.png)
 
 ---
 
 ### 📝 Register
 
-![Register](<img width="1882" height="902" alt="Screenshot 2026-04-08 004825" src="https://github.com/user-attachments/assets/fc560d1a-ddd1-446f-a7bb-c407292e69e3" />
-)
+![Register](screenshots/register.png)
 
 ---
 
 ### 📊 Dashboard
 
-![Dashboard](<img width="1882" height="902" alt="Screenshot 2026-04-08 004825" src="https://github.com/user-attachments/assets/870ca7a9-172b-4bf9-a4e5-2e50c2145189" />
-)
+![Dashboard](screenshots/dashboard.png)
 
 ---
 
 ### 🤖 AI Fake News Analysis
 
-![Analysis](<img width="1872" height="881" alt="Screenshot 2026-04-13 215207" src="https://github.com/user-attachments/assets/e852e707-3794-42e6-af5e-f2a8ae830074" />
-)
+![Analysis](screenshots/analysis.png)
 
 ---
 
